@@ -1,9 +1,12 @@
-#include <appdef.hpp>
-#include <sdk/os/lcd.hpp>
-#include <sdk/calc/calc.hpp>
+#include <appdef.h>
+#include <sdk/os/lcd.h>
+#include <sdk/os/input.h>
+#include <sdk/os/mem.h>
 #include <stdlib.h>
 #include "math_tables.h"
 #include "constants.h"
+
+#define vram ((uint16_t*)LCD_GetVRAMAddress())
 
 APP_NAME("RayCaster-Demo")
 APP_DESCRIPTION("A small demo of a simple raycaster engine")
@@ -501,20 +504,24 @@ uint8_t engineRunning = 1;
 uint8_t display2dField = 1;
 uint8_t shiftPressed = 0;
 
-extern "C"
-void main()
-{
-	calcInit();
+int key_down = 0;
+int key_up = 0;
+int key_right = 0;
+int key_left = 0;
+int key_shift = 0;
+int key_clear = 0;
 
+int main()
+{
   gameSetup();
   gameLoop();
 
-	calcEnd();
+  return 0;
 }
 
 void gameSetup()
 {
-  fillScreen(0x0000);
+  LCD_ClearScreen();
 
   mainPlayer.xPos = 40762;
   mainPlayer.yPos = 40760;
@@ -561,27 +568,40 @@ void characterManipulation()
 
 void playerInput()
 {
-	uint32_t key0;
-	uint32_t key1;
+  struct Input_Event event __attribute__((aligned(4)));
+  while (GetInput(&event, 0, 0x10) == 0 && event.type != EVENT_NONE) {
+    if (event.type == EVENT_KEY) {
+      int isPressed = (event.data.key.direction == KEY_PRESSED || event.data.key.direction == KEY_HELD);
+      switch (event.data.key.keyCode) {
+        case KEYCODE_DOWN: key_down = isPressed; break;
+        case KEYCODE_UP: key_up = isPressed; break;
+        case KEYCODE_RIGHT: key_right = isPressed; break;
+        case KEYCODE_LEFT: key_left = isPressed; break;
+        case KEYCODE_SHIFT: key_shift = isPressed; break;
+        case KEYCODE_POWER_CLEAR: key_clear = isPressed; break;
+        default: break;
+      }
+    }
+    // Zero out the event so the next call to GetInput is clean
+    Mem_Memset(&event, 0, sizeof(struct Input_Event));
+  }
 
-	getKey(&key0, &key1);
-
-  if(testKey(key0, key1, KEY_DOWN)) 
+  if(key_down)
   {
     mainPlayer.velocity = -PLAYER_MAX_VELOCITY;
   }
-  if(testKey(key0, key1, KEY_UP))
+  if(key_up)
   {
     mainPlayer.velocity = PLAYER_MAX_VELOCITY;
   }
-  if(testKey(key0, key1, KEY_RIGHT))
+  if(key_right)
   {
     if(mainPlayer.angle == 0)
       mainPlayer.angle = 360;
 
     mainPlayer.angle -= PLAYER_SENSITIVITY;
   }
-  if(testKey(key0, key1, KEY_LEFT))
+  if(key_left)
   {
     mainPlayer.angle += PLAYER_SENSITIVITY;
    
@@ -589,17 +609,17 @@ void playerInput()
       mainPlayer.angle = 0;
   }
 
-  if((testKey(key0, key1, KEY_SHIFT)) && !shiftPressed)
+  if((key_shift) && !shiftPressed)
   {
     display2dField = !display2dField;
     shiftPressed = 1;
   }
 
-  if(shiftPressed && !(testKey(key0, key1, KEY_SHIFT))) {
+  if(shiftPressed && !(key_shift)) {
     shiftPressed = 0;
 	}
 
-  if((testKey(key0, key1, KEY_SHIFT)) && (testKey(key0, key1, KEY_CLEAR))) {
+  if((key_shift) && (key_clear)) {
     engineRunning = 0;
 	}
 }
