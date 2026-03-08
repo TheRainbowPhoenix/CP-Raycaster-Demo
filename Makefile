@@ -12,7 +12,9 @@ DEPFLAGS=-MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
 WARNINGS=-Wall -Wextra -pedantic -Werror -pedantic-errors
 INCLUDES=-I$(SDK_DIR)/include #-I$(SOURCEDIR)
 DEFINES=
-FUNCTION_FLAGS=-flto=auto -ffat-lto-objects -fno-builtin -ffunction-sections -fdata-sections -gdwarf-5 -O2
+
+# Removed LTO flags (-flto=auto -ffat-lto-objects) to vastly improve performances time
+FUNCTION_FLAGS=-fno-builtin -ffunction-sections -fdata-sections -gdwarf-5 -O2
 COMMON_FLAGS=$(FUNCTION_FLAGS) $(INCLUDES) $(WARNINGS) $(DEFINES)
 
 CC:=sh4a_nofpueb-elf-gcc
@@ -29,7 +31,7 @@ READELF:=sh4a_nofpueb-elf-readelf
 OBJCOPY:=sh4a_nofpueb-elf-objcopy
 STRIP:=sh4a_nofpueb-elf-strip
 
-APP_ELF := $(OUTDIR)/CPapp.elf
+APP_ELF := $(OUTDIR)/CPRaycaster.elf
 APP_HH3 := $(APP_ELF:.elf=.hh3)
 
 AS_SOURCES:=$(shell find $(SOURCEDIR) -name '*.S')
@@ -38,8 +40,6 @@ CXX_SOURCES:=$(shell find $(SOURCEDIR) -name '*.cpp')
 OBJECTS := $(addprefix $(BUILDDIR)/,$(AS_SOURCES:.S=.o)) \
 	$(addprefix $(BUILDDIR)/,$(CC_SOURCES:.c=.o)) \
 	$(addprefix $(BUILDDIR)/,$(CXX_SOURCES:.cpp=.o))
-
-NOLTOOBJS := $(foreach obj, $(OBJECTS), $(if $(findstring /nolto/, $(obj)), $(obj)))
 
 DEPFILES := $(OBJECTS:$(BUILDDIR)/%.o=$(DEPDIR)/%.d)
 
@@ -61,21 +61,17 @@ $(APP_ELF): $(OBJECTS)
 	@mkdir -p $(dir $@)
 	$(LD) -Wl,-Map $@.map -o $@ $(LD_FLAGS) $^ $(LIBS)
 
-$(NOLTOOBJS): FUNCTION_FLAGS+=-fno-lto
-
 $(BUILDDIR)/%.o: %.S
 	@mkdir -p $(dir $@)
 	$(AS) -c $< -o $@ $(AS_FLAGS)
 
 $(BUILDDIR)/%.o: %.c
-	@mkdir -p $(dir $@)
-	@mkdir -p $(dir $(DEPDIR)/$<)
-	+$(CC) -c $< -o $@ $(CC_FLAGS) $(DEPFLAGS)
+	@mkdir -p $(dir $@) $(dir $(DEPDIR)/$<)
+	$(CC) -c $< -o $@ $(CC_FLAGS) $(DEPFLAGS)
 
 $(BUILDDIR)/%.o: %.cpp
-	@mkdir -p $(dir $@)
-	@mkdir -p $(dir $(DEPDIR)/$<)
-	+$(CXX) -c $< -o $@ $(CXX_FLAGS) $(DEPFLAGS)
+	@mkdir -p $(dir $@) $(dir $(DEPDIR)/$<)
+	$(CXX) -c $< -o $@ $(CXX_FLAGS) $(DEPFLAGS)
 
 compile_commands.json:
 	$(MAKE) $(MAKEFLAGS) clean
