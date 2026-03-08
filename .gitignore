@@ -1,7 +1,5 @@
-.vscode/*
-app4*
-obj/*
-table_generator.py
-textures/*
-*.bin
-*.o
+dist/
+obj/
+.cache/
+.deps/
+compile_commands.json
