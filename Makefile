@@ -39,8 +39,6 @@ OBJECTS := $(addprefix $(BUILDDIR)/,$(AS_SOURCES:.S=.o)) \
 	$(addprefix $(BUILDDIR)/,$(CC_SOURCES:.c=.o)) \
 	$(addprefix $(BUILDDIR)/,$(CXX_SOURCES:.cpp=.o))
 
-NOLTOOBJS := $(foreach obj, $(OBJECTS), $(if $(findstring /nolto/, $(obj)), $(obj)))
-
 DEPFILES := $(OBJECTS:$(BUILDDIR)/%.o=$(DEPDIR)/%.d)
 
 hh3: $(APP_HH3) Makefile
@@ -61,21 +59,17 @@ $(APP_ELF): $(OBJECTS)
 	@mkdir -p $(dir $@)
 	$(LD) -Wl,-Map $@.map -o $@ $(LD_FLAGS) $^ $(LIBS)
 
-$(NOLTOOBJS): FUNCTION_FLAGS+=-fno-lto
-
 $(BUILDDIR)/%.o: %.S
 	@mkdir -p $(dir $@)
 	$(AS) -c $< -o $@ $(AS_FLAGS)
 
 $(BUILDDIR)/%.o: %.c
-	@mkdir -p $(dir $@)
-	@mkdir -p $(dir $(DEPDIR)/$<)
-	+$(CC) -c $< -o $@ $(CC_FLAGS) $(DEPFLAGS)
+	@mkdir -p $(dir $@) $(dir $(DEPDIR)/$<)
+	$(CC) -c $< -o $@ $(CC_FLAGS) $(DEPFLAGS)
 
 $(BUILDDIR)/%.o: %.cpp
-	@mkdir -p $(dir $@)
-	@mkdir -p $(dir $(DEPDIR)/$<)
-	+$(CXX) -c $< -o $@ $(CXX_FLAGS) $(DEPFLAGS)
+	@mkdir -p $(dir $@) $(dir $(DEPDIR)/$<)
+	$(CXX) -c $< -o $@ $(CXX_FLAGS) $(DEPFLAGS)
 
 compile_commands.json:
 	$(MAKE) $(MAKEFLAGS) clean
