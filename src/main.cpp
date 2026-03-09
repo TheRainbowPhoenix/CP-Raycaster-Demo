@@ -943,7 +943,6 @@ void draw3dField()
 				);
 
       // draw the wall
-      uint16_t* vram = (uint16_t*)LCD_GetVRAMAddress();
       vram[((((HEIGHT_3D - wallHeight) / 2) + TOP_OFFSET_3D + pixelRow) * DISPLAY_WIDTH) + ((DISPLAY_WIDTH - 21) - x) + 10] = wallColor;    
 
       currentTextureY += textureYStep;
@@ -1083,7 +1082,6 @@ void drawSprites()
           continue;
         }
 
-        uint16_t* vram = (uint16_t*)LCD_GetVRAMAddress();
         vram[((viewY + TOP_OFFSET_3D) * DISPLAY_WIDTH) + (viewX + 10)] = pixelColor;
 
         viewY++;
@@ -1152,7 +1150,6 @@ int compareSpriteDistance(const void *elem1, const void *elem2)
 
 void drawRectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color)
 {
-  uint16_t* vram = (uint16_t*)LCD_GetVRAMAddress();
   for (uint16_t yOffset = 0; yOffset < height; yOffset++)
   {
     for (uint16_t xOffset = 0; xOffset < width; xOffset++)
@@ -1164,7 +1161,6 @@ void drawRectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint
 
 void drawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint16_t color)
 {
-  uint16_t* vram = (uint16_t*)LCD_GetVRAMAddress();
   int32_t i, dx, dy, sdx, sdy, dxabs, dyabs, x, y, px, py;
 
   dx = x2 - x1;      /* the horizontal distance of the line */
