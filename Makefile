@@ -12,9 +12,7 @@ DEPFLAGS=-MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
 WARNINGS=-Wall -Wextra -pedantic -Werror -pedantic-errors
 INCLUDES=-I$(SDK_DIR)/include #-I$(SOURCEDIR)
 DEFINES=
-
-# Removed LTO flags (-flto=auto -ffat-lto-objects) to vastly improve performances time
-FUNCTION_FLAGS=-fno-builtin -ffunction-sections -fdata-sections -gdwarf-5 -O2
+FUNCTION_FLAGS=-ffunction-sections -fdata-sections -gdwarf-5 -Ofast -fwhole-program -flto=auto -fno-builtin -ffat-lto-objects
 COMMON_FLAGS=$(FUNCTION_FLAGS) $(INCLUDES) $(WARNINGS) $(DEFINES)
 
 CC:=sh4a_nofpueb-elf-gcc
@@ -31,7 +29,7 @@ READELF:=sh4a_nofpueb-elf-readelf
 OBJCOPY:=sh4a_nofpueb-elf-objcopy
 STRIP:=sh4a_nofpueb-elf-strip
 
-APP_ELF := $(OUTDIR)/CPRaycaster.elf
+APP_ELF := $(OUTDIR)/CPRaycasterDemo.elf
 APP_HH3 := $(APP_ELF:.elf=.hh3)
 
 AS_SOURCES:=$(shell find $(SOURCEDIR) -name '*.S')

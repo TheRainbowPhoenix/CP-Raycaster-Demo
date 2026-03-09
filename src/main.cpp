@@ -2,11 +2,10 @@
 #include <sdk/os/lcd.h>
 #include <sdk/os/input.h>
 #include <sdk/os/mem.h>
+#include <sdk/calc/calc.h>
 #include <stdlib.h>
 #include "math_tables.h"
 #include "constants.h"
-
-#define vram ((uint16_t*)LCD_GetVRAMAddress())
 
 APP_NAME("RayCaster-Demo")
 APP_DESCRIPTION("A small demo of a simple raycaster engine")
